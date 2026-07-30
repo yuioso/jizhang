@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.demo.account.mapper.StatisticsMapper">
+
+
+    <!-- 本月收入 -->
+
+    <select id="getIncome"
+            resultType="java.math.BigDecimal">
+
+
+        select
+            IFNULL(sum(amount),0)
+
+        from bill
+
+
+        where user_id=#{userId}
+
+
+          and type=2
+
+
+          and DATE_FORMAT(
+                      bill_time,
+                      '%Y-%m'
+              )
+            =
+              DATE_FORMAT(
+                      NOW(),
+                      '%Y-%m'
+              )
+
+
+    </select>
+
+
+
+    <!-- 本月支出 -->
+
+    <select id="getExpense"
+            resultType="java.math.BigDecimal">
+
+
+        select
+            IFNULL(sum(amount),0)
+
+        from bill
+
+
+        where user_id=#{userId}
+
+
+          and type=1
+
+
+          and DATE_FORMAT(
+                      bill_time,
+                      '%Y-%m'
+              )
+            =
+              DATE_FORMAT(
+                      NOW(),
+                      '%Y-%m'
+              )
+
+
+    </select>
+
+
+
+
+    <!-- 分类统计 -->
+
+
+    <select id="getCategoryStatistics"
+            resultType="com.demo.account.dto.statistics.CategoryStatisticsDTO">
+
+
+        select
+
+
+            c.name,
+
+
+            sum(b.amount) value
+
+
+
+        from bill b
+
+
+            left join category c
+
+
+        on b.category_id=c.id
+
+
+
+        where b.user_id=#{userId}
+
+
+
+          and b.type=1
+
+
+
+        group by c.name
+
+
+
+    </select>
+
+
+
+
+
+    <!-- 最近7天消费 -->
+
+
+    <select id="getTrend"
+            resultType="com.demo.account.dto.statistics.TrendDTO">
+
+
+        select
+
+
+            DATE_FORMAT(
+                    bill_time,
+                    '%Y-%m-%d'
+            )
+            date,
+
+
+        sum(amount) amount
+
+
+
+        from bill
+
+
+
+        where user_id=#{userId}
+
+
+
+          and type=1
+
+
+
+          and bill_time >= DATE_SUB(
+            CURDATE(),
+            INTERVAL 7 DAY
+            )
+
+
+        group by bill_time
+
+
+
+        order by bill_time
+
+
+
+    </select>
+
+
+
+</mapper>
